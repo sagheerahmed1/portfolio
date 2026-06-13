@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sagheer Ahmed — Data Analyst Portfolio. Python, SQL, Excel, Power BI." />
+  <title>Sagheer Ahmed — Data Analyst</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Lato', 'Calibri', sans-serif; font-size: 16px; line-height: 1.7; }
+    #root { min-height: 100vh; }
+    ::selection { background: rgba(82,121,111,0.3); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes float1 { 0%,100%{transform:translateY(0) translateX(0)} 25%{transform:translateY(-20px) translateX(10px)} 50%{transform:translateY(-35px) translateX(-5px)} 75%{transform:translateY(-15px) translateX(15px)} }
+    @keyframes float2 { 0%,100%{transform:translateY(0) translateX(0)} 33%{transform:translateY(25px) translateX(-15px)} 66%{transform:translateY(-20px) translateX(8px)} }
+    @keyframes float3 { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-40px) scale(1.05)} }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+    @keyframes slideInRight { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes typing { 0%,60%,100%{transform:translateY(0);opacity:0.4} 30%{transform:translateY(-6px);opacity:1} }
+    @media(max-width:768px){.desktop-nav{display:none!important}.mobile-menu-btn{display:block!important}}
+    @media(max-width:900px){.about-grid,.contact-grid{grid-template-columns:1fr!important}}
+    @media(max-width:640px){.projects-grid,.pbi-grid{grid-template-columns:1fr!important}}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+const PROJECTS = [
+  {
+    id:1, title:"Superstore Sales EDA", emoji:"🏪", status:"Completed",
+    problem:"A U.S. retail chain needed to understand why profit margins were declining despite growing revenue — identifying which categories, regions, and discount strategies were silently bleeding money.",
+    dataset:"9,994 rows x 21 columns. Four years of order-level transactions (2014-2017) covering sales, profit, discount, sub-category, region, and shipping. Source: Tableau Sample Superstore.",
+    cleaning:["Removed 11 duplicate Order ID entries that inflated revenue totals","Converted Order Date and Ship Date from object strings to proper datetime","Engineered Profit Margin % column: (Profit / Sales) x 100","Flagged 1,871 negative-profit orders (~18.7% of all data) for deep-dive analysis"],
+    eda:"Explored profit distribution across sub-categories, discount bands, and regions. Built correlation heatmaps to isolate the discount-profit relationship. Visualized year-over-year sales trends and regional margin comparisons.",
+    insights:["Tables sub-category loses $17,725 annually — the single largest profit drain in the dataset","Discounts above 20% flip average order profit negative at -$109, destroying margin across all categories","Central region posts the weakest margin at 7.9%, nearly half the Technology segment's 17%","Sales grew 51% from 2014-2017, but profit growth lagged at 31% — signaling structural cost inefficiency"],
+    metrics:["$17,725 annual loss identified","51% sales growth tracked","7.9% Central margin","-$109 avg at 20%+ discount"],
+    tools:["Python","pandas","matplotlib","seaborn","Jupyter"],
+    github:"https://github.com/sagheerahmed1/superstore-eda",
+    conclusion:"By eliminating deep-discount orders and repositioning the Tables sub-category, the retailer could recover an estimated $25K+ in annual profit — without acquiring a single new customer.",
+  },
+  {
+    id:2, title:"Customer Segmentation (RFM Analysis)", emoji:"👥", status:"Completed",
+    problem:"An e-commerce brand was spending equal marketing budget across all customers — including one-time buyers and loyal VIPs — leading to wasted ad spend and poor retention among high-value segments.",
+    dataset:"541,909 rows x 8 columns. UK-based online retail transactions (2010-2011). Columns include InvoiceNo, Quantity, InvoiceDate, UnitPrice, CustomerID, and Country. Source: UCI Machine Learning Repository.",
+    cleaning:["Dropped 135,080 rows with missing CustomerID (non-registered guest sessions)","Removed 9,288 negative-Quantity rows representing cancellations and returns","Filtered out UnitPrice 0 entries (errors and promotional free items)","Engineered TotalRevenue = Quantity x UnitPrice per transaction row"],
+    eda:"Computed RFM scores (Recency, Frequency, Monetary) per customer using quintile scoring. Assigned 1-5 scores on each dimension, then combined to create 5 segment labels. Visualized segments using seaborn pairplots and distribution charts.",
+    insights:["Top 20% of customers (Champions + Loyal) generate 68% of total revenue — confirming the Pareto principle","At-Risk customers (high past spend, no recent purchase) represent $42K in recoverable revenue if re-engaged","One-time buyers make up 51% of the customer base but contribute only 9% of total revenue","Netherlands and EIRE show the highest average order value per customer despite lower volume than UK"],
+    metrics:["68% revenue from top 20%","$42K recoverable At-Risk revenue","5 segments identified","541K transactions analyzed"],
+    tools:["Python","pandas","seaborn","scikit-learn","Jupyter"],
+    github:"https://github.com/sagheerahmed1",
+    conclusion:"Targeted win-back campaigns for At-Risk customers and VIP perks for Champions could shift 8-12% more revenue into high-margin repeat transactions within one quarter.",
+  },
+  {
+    id:3, title:"Netflix Content Strategy Analysis", emoji:"🎬", status:"Completed",
+    problem:"Netflix's content team needs data to prioritize which genres, countries, and content types (Movies vs. TV Shows) to invest in — especially as subscriber growth plateaued in key markets.",
+    dataset:"8,807 titles x 12 columns. Netflix's full catalog as of mid-2021. Includes type, title, director, cast, country, date_added, release_year, rating, duration, and genre. Source: Kaggle.",
+    cleaning:["Handled 2,634 missing director values — filled as 'Not Listed' to preserve rows","Parsed multi-value genre and country columns using string split + explode for granular analysis","Converted date_added to datetime and extracted year/month for trend analysis","Standardized rating categories — merged TV-Y7-FV and TV-Y7 into one unified label"],
+    eda:"Analyzed content type ratio over time, top producing countries, genre distribution by year, and rating spread. Built heatmaps of country x genre combinations to identify gaps and oversaturated areas in the library.",
+    insights:["Movies outnumber TV Shows 2:1 (5,377 vs. 2,410), but TV Show additions grew 35% faster from 2019-2021","US, India, and UK are top 3 producers — but South Korea shows the fastest growth at +180% in 3 years","Dramas and International content are the top 2 genres, accounting for 48% of all catalog titles","70% of content carries TV-MA or R ratings — heavy adult skew creates risk if targeting family segments"],
+    metrics:["8,807 titles analyzed","TV Shows +35% faster growth","South Korea +180% in 3 yrs","48% from just 2 genres"],
+    tools:["Python","pandas","matplotlib","seaborn","Jupyter"],
+    github:"https://github.com/sagheerahmed1",
+    conclusion:"Increasing investment in South Korean originals and expanding family-friendly content addresses two high-growth segments simultaneously — with strong global crossover appeal proven by existing hits.",
+  },
+  {
+    id:4, title:"HR Attrition Analysis", emoji:"👔", status:"Completed",
+    problem:"A mid-size tech company was losing 16% of employees annually with no clear understanding of why — costing an estimated $8K-$12K per replaced employee in recruiting and onboarding costs.",
+    dataset:"1,470 rows x 35 columns. IBM HR Analytics dataset covering employee records: age, department, job role, salary, overtime, satisfaction scores, years at company, and attrition flag. Source: Kaggle.",
+    cleaning:["Verified zero missing values — dataset is structurally clean by design","Encoded binary categorical variables: Attrition Yes/No to 1/0 for correlation analysis","Created tenure bands: <2 years, 2-5 years, 5-10 years, 10+ years","Engineered composite SatisfactionScore = avg(JobSatisfaction, EnvironmentSatisfaction, RelationshipSatisfaction)"],
+    eda:"Built correlation matrix between attrition and all numeric variables. Compared attrition rates by department, job role, overtime status, salary band, and tenure using grouped bar charts and violin plots.",
+    insights:["Overtime workers leave at 30.5% vs. 10.4% for non-overtime — the single strongest attrition predictor","Sales Representatives have the highest attrition at 39.8%, nearly 3x the company-wide average","Employees earning under $3K/month leave at 26% rate; above $5K/month drops sharply to 6.2%","First 2 years are critical: 35% of all attrition happens within 24 months of joining"],
+    metrics:["30.5% overtime attrition","39.8% Sales Rep turnover","$3K salary threshold found","35% attrition in Year 1-2"],
+    tools:["Python","pandas","seaborn","matplotlib","Jupyter"],
+    github:"https://github.com/sagheerahmed1",
+    conclusion:"Addressing overtime culture and adjusting compensation for the $2K-$3K salary band alone could reduce company-wide attrition by an estimated 4-6 percentage points — saving $300K+ annually in replacement costs.",
+  },
+  {
+    id:5, title:"SQL Sales Performance Dashboard", emoji:"🗄️", status:"Completed",
+    problem:"The Superstore retailer had no structured way to query KPIs on demand — every business question required manual Excel work. Goal: build reusable SQL views for instant, repeatable reporting.",
+    dataset:"9,994 rows of Superstore transactional data imported into PostgreSQL. Structured as a relational table with indexes on Order ID, Customer ID, and Region for query performance.",
+    cleaning:["Imported CSV into PostgreSQL using COPY command with explicit data type casting","Created a clean_orders VIEW excluding returns and negative-quantity rows","Added computed columns via ALTER TABLE for profit_margin and discount_band","Indexed date and region columns for faster time-range and group-by queries"],
+    eda:"Wrote 15+ analytical SQL queries covering revenue rollups, YoY growth comparisons, cohort-style analysis, and outlier detection. Used CTEs and window functions for rank-based KPI reporting.",
+    insights:["Technology drives 58% of total profit on only 36% of revenue — highest ROI category by far","Top 10 customers by lifetime value account for 18% of total revenue — a high concentration risk","Q4 consistently outperforms other quarters by 34% in sales — seasonal inventory planning is critical","Standard Class shipping (60% of orders) averages 5.1 days delivery, with First Class showing 3x better"],
+    metrics:["15+ SQL queries written","58% profit from Tech category","34% Q4 revenue premium","Top 10 customers = 18% revenue"],
+    tools:["SQL","PostgreSQL","Excel","pgAdmin"],
+    github:"https://github.com/sagheerahmed1",
+    conclusion:"The resulting SQL query library reduces ad-hoc reporting time by an estimated 70% — any KPI question can now be answered in under 2 minutes with a parameterized query.",
+  },
+];
+
+const SKILLS = [
+  { name:"Python", level:80, icon:"🐍", category:"Language" },
+  { name:"SQL", level:82, icon:"🗄️", category:"Language" },
+  { name:"Excel", level:85, icon:"📊", category:"Tool" },
+  { name:"pandas", level:78, icon:"🐼", category:"Library" },
+  { name:"matplotlib", level:72, icon:"📈", category:"Library" },
+  { name:"seaborn", level:70, icon:"🌊", category:"Library" },
+  { name:"Power BI", level:45, icon:"⚡", category:"Tool" },
+];
+
+const POWERBI_DASHBOARDS = [
+  {
+    title:"Sales Performance Dashboard", icon:"📊", color:"#52796F",
+    visuals:["KPI Cards — Total Revenue, Total Profit, Profit Margin %, YoY Growth","Line Chart — Monthly Sales Trend (2014-2017)","Bar Chart — Sales & Profit by Sub-Category (sorted descending)","Map Visual — Sales by U.S. State with color intensity","Scatter Plot — Discount % vs. Profit highlighting negative-profit zone in red","Donut Chart — Revenue split by Category (Furniture / Tech / Office Supplies)"],
+    kpis:["Total Revenue: $2.3M","Profit Margin: 12.5%","YoY Growth: 51% (2014-2017)","Loss-making orders: 18.7%"],
+    slicers:["Year (2014, 2015, 2016, 2017)","Region (Central, East, West, South)","Category (Furniture, Technology, Office Supplies)","Discount Band (0%, 1-20%, 20%+)"],
+    questions:["Which sub-categories should be discontinued or repriced?","Does discounting actually improve or hurt profitability?","Which regions need targeted sales strategy interventions?","What is our strongest quarter and how should we plan inventory?"],
+  },
+  {
+    title:"HR Attrition Dashboard", icon:"👥", color:"#3D6B5E",
+    visuals:["KPI Cards — Attrition Rate %, Active Employees, Avg Tenure, Avg Salary","Bar Chart — Attrition count and rate by Department","Stacked Bar — Overtime vs. Non-Overtime attrition comparison","Box Plot — Salary distribution by attrition status (stayed vs. left)","Heatmap — Job Role x Satisfaction Score matrix","Funnel — Attrition by tenure band (0-2y, 2-5y, 5-10y, 10y+)"],
+    kpis:["Overall Attrition Rate: 16.1%","Sales Rep Attrition: 39.8%","Overtime Attrition: 30.5%","Avg salary of leavers: $4,787"],
+    slicers:["Department (Sales, R&D, HR)","Overtime (Yes / No)","Salary Band (<$3K, $3-5K, $5K+)","Gender","Education Level"],
+    questions:["Which departments have the highest flight risk right now?","Is overtime driving attrition across all departments or just some?","What salary threshold significantly reduces attrition probability?","Are newer employees disproportionately more likely to leave?"],
+  },
+];
+
+const BOT_RESPONSES = [
+  { keywords:["hello","hi","hey","start","help"], response:"Hi there! 👋 I'm Sagheer's portfolio assistant. Ask me about his skills, projects, experience, or how to contact him!" },
+  { keywords:["skill","tools","languages","good at","tech"], response:"Sagheer is proficient in Python (pandas, matplotlib, seaborn), SQL, and Excel. He's also building Power BI skills. His strongest area is exploratory data analysis." },
+  { keywords:["project","work","portfolio","built","analysis"], response:"He's completed 5 analytics projects: Superstore Sales EDA, Customer Segmentation (RFM), Netflix Content Analysis, HR Attrition Analysis, and a SQL Sales Dashboard. Expand any card to see the full analysis!" },
+  { keywords:["contact","reach","email","message","connect"], response:"Reach Sagheer on GitHub at github.com/sagheerahmed1 or via the contact form at the bottom of this page. He responds within 24 hours." },
+  { keywords:["open","job","hire","opportunity","looking","work","available"], response:"Yes! Sagheer is actively looking for Data Analyst roles. He's based in Pakistan and open to remote opportunities globally." },
+  { keywords:["experience","background","who","about","yourself"], response:"Sagheer is a Computer Science graduate from Pakistan passionate about transforming raw data into actionable business insights. He's completed 5 real-world analytics projects." },
+  { keywords:["education","degree","study","university","cs"], response:"Sagheer holds a Bachelor's in Computer Science — covering databases, statistics, algorithms, and programming, all applied directly in his analytics work." },
+  { keywords:["python","pandas","matplotlib","seaborn","jupyter"], response:"Python is Sagheer's primary tool. He uses pandas for wrangling, matplotlib and seaborn for visualization, and Jupyter for exploratory analysis — used in 4 of his 5 projects." },
+  { keywords:["sql","database","query","postgresql"], response:"Sagheer writes complex SQL — CTEs, window functions, aggregations, joins. In his SQL project he wrote 15+ analytical queries against the Superstore dataset in PostgreSQL." },
+  { keywords:["power bi","powerbi","dashboard","bi"], response:"Power BI is Sagheer's newest skill. He's designed 2 detailed dashboard concepts — Sales Performance and HR Attrition — and is actively learning." },
+  { keywords:["location","where","pakistan","remote","based"], response:"Sagheer is based in Rawalpindi, Pakistan. He's open to fully remote work globally and would consider relocation for the right opportunity." },
+  { keywords:["github","repo","code","repository"], response:"All projects are on GitHub at github.com/sagheerahmed1. The Superstore EDA repo has the most detailed analysis!" },
+  { keywords:["superstore","eda","retail"], response:"The Superstore EDA found Tables loses $17,725/year and discounts above 20% destroy profit at -$109 per order. Check the Projects section for the full story!" },
+  { keywords:["rfm","customer","segmentation"], response:"In Customer Segmentation, top 20% of customers generate 68% of revenue, and $42K in At-Risk customer revenue was identified using RFM analysis." },
+  { keywords:["netflix","content","streaming","shows"], response:"The Netflix analysis found South Korea's content grew 180% in 3 years, and TV Shows grow 35% faster than Movies in the catalog." },
+  { keywords:["hr","attrition","employee","turnover"], response:"In the HR project, overtime workers leave at 30.5% vs 10.4% — the #1 predictor. Fixing this could save $300K+ annually in replacement costs." },
+];
+
+function getBotResponse(input) {
+  const lower = input.toLowerCase();
+  for (const item of BOT_RESPONSES) {
+    if (item.keywords.some(kw => lower.includes(kw))) return item.response;
+  }
+  return "Great question! Try asking about Sagheer's skills, projects, experience, or how to contact him. 😊";
+}
+
+function applyTheme(dark) {
+  const r = document.documentElement.style;
+  r.setProperty('--bg',           dark ? '#2F3E46' : '#EEF4F2');
+  r.setProperty('--bg-alt',       dark ? '#263238' : '#CAD2C5');
+  r.setProperty('--card',         dark ? '#354F52' : '#FFFFFF');
+  r.setProperty('--accent',       '#52796F');
+  r.setProperty('--accent-light', dark ? 'rgba(82,121,111,0.22)' : 'rgba(82,121,111,0.12)');
+  r.setProperty('--text-heading', dark ? '#CAD2C5' : '#2F3E46');
+  r.setProperty('--text',         dark ? '#CAD2C5' : '#354F52');
+  r.setProperty('--text-muted',   dark ? '#84A98C' : '#52796F');
+  r.setProperty('--border',       dark ? '#3D5A5E' : '#B8C5BF');
+  r.setProperty('--shadow',       dark ? 'rgba(0,0,0,0.3)' : 'rgba(47,62,70,0.08)');
+  r.setProperty('--shadow-hover', dark ? 'rgba(0,0,0,0.45)' : 'rgba(47,62,70,0.14)');
+  r.setProperty('--nav-bg',       dark ? 'rgba(47,62,70,0.95)' : 'rgba(238,244,242,0.95)');
+  r.setProperty('--input-bg',     dark ? '#263238' : '#E6EFEC');
+  document.body.style.backgroundColor = dark ? '#2F3E46' : '#EEF4F2';
+  document.body.style.color = dark ? '#CAD2C5' : '#354F52';
+  document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+}
+
+function SectionLabel({ label }) {
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:'0.75rem' }}>
+      <div style={{ width:3, height:18, background:'var(--accent)', borderRadius:2 }} />
+      <span style={{ fontSize:12, fontWeight:700, color:'var(--accent)', letterSpacing:'0.12em', textTransform:'uppercase' }}>{label}</span>
+    </div>
+  );
+}
+
+function Navbar({ dark, toggleDark }) {
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', fn);
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+  const links = [
+    {label:'About',href:'#about'},{label:'Skills',href:'#skills'},
+    {label:'Projects',href:'#projects'},{label:'Power BI',href:'#powerbi'},{label:'Contact',href:'#contact'},
+  ];
+  return (
+    <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:1000, background:'var(--nav-bg)', backdropFilter:'blur(12px)', borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent', transition:'all 0.3s ease', padding:'0 2rem' }}>
+      <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', height:64 }}>
+        <a href="#home" style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:8 }}>
+          <span style={{ width:32, height:32, borderRadius:8, background:'var(--accent)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:14 }}>SA</span>
+          <span style={{ fontWeight:700, fontSize:16, color:'var(--text-heading)' }}>Sagheer Ahmed</span>
+        </a>
+        <div className="desktop-nav" style={{ display:'flex', alignItems:'center', gap:'1.5rem' }}>
+          {links.map(l => (
+            <a key={l.label} href={l.href} style={{ textDecoration:'none', color:'var(--text-muted)', fontSize:14, transition:'color 0.2s ease' }}
+              onMouseEnter={e => e.target.style.color='var(--accent)'}
+              onMouseLeave={e => e.target.style.color='var(--text-muted)'}>{l.label}</a>
+          ))}
+          <button onClick={toggleDark} style={{ background:'var(--accent-light)', border:'1px solid var(--border)', borderRadius:20, padding:'6px 12px', cursor:'pointer', display:'flex', alignItems:'center', gap:6, color:'var(--accent)', fontSize:14, transition:'all 0.2s ease' }}
+            onMouseEnter={e => { e.currentTarget.style.background='var(--accent)'; e.currentTarget.style.color='#fff'; }}
+            onMouseLeave={e => { e.currentTarget.style.background='var(--accent-light)'; e.currentTarget.style.color='var(--accent)'; }}>
+            {dark ? '☀️' : '🌙'} <span style={{ fontSize:12 }}>{dark ? 'Light' : 'Dark'}</span>
+          </button>
+        </div>
+        <button className="mobile-menu-btn" onClick={() => setMenuOpen(!menuOpen)} style={{ display:'none', background:'none', border:'none', cursor:'pointer', color:'var(--text)', fontSize:22 }}>{menuOpen ? '✕' : '☰'}</button>
+      </div>
+      {menuOpen && (
+        <div style={{ padding:'1rem 2rem 1.5rem', borderTop:'1px solid var(--border)', display:'flex', flexDirection:'column', gap:'1rem', background:'var(--nav-bg)' }}>
+          {links.map(l => <a key={l.label} href={l.href} onClick={() => setMenuOpen(false)} style={{ textDecoration:'none', color:'var(--text)', fontSize:15 }}>{l.label}</a>)}
+          <button onClick={() => { toggleDark(); setMenuOpen(false); }} style={{ background:'var(--accent-light)', border:'1px solid var(--border)', borderRadius:20, padding:'8px 16px', cursor:'pointer', color:'var(--accent)', fontSize:14, width:'fit-content' }}>{dark ? '☀️ Light' : '🌙 Dark'}</button>
+        </div>
+      )}
+    </nav>
+  );
+}
+
+function Hero({ dark }) {
+  const orbs = [
+    { size:300, top:'10%', left:'5%', op:dark?0.04:0.06, anim:'float1 12s ease-in-out infinite' },
+    { size:200, top:'60%', left:'80%', op:dark?0.05:0.08, anim:'float2 9s ease-in-out infinite' },
+    { size:150, top:'80%', left:'20%', op:dark?0.03:0.05, anim:'float3 15s ease-in-out infinite' },
+    { size:100, top:'30%', left:'70%', op:dark?0.04:0.06, anim:'float1 8s ease-in-out infinite reverse' },
+    { size:250, top:'5%', left:'50%', op:dark?0.03:0.04, anim:'float2 18s ease-in-out infinite' },
+  ];
+  return (
+    <section id="home" style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', overflow:'hidden', background:'var(--bg)', paddingTop:80, paddingBottom:60 }}>
+      {orbs.map((o,i) => <div key={i} style={{ position:'absolute', width:o.size, height:o.size, borderRadius:'50%', background:'#52796F', opacity:o.op, top:o.top, left:o.left, animation:o.anim, pointerEvents:'none' }} />)}
+      <div style={{ textAlign:'center', maxWidth:700, padding:'0 2rem', position:'relative', zIndex:1, animation:'fadeInUp 0.8s ease both' }}>
+        <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-light)', border:'1px solid rgba(82,121,111,0.3)', borderRadius:20, padding:'6px 16px', marginBottom:'1.5rem', fontSize:13, color:'var(--accent)', fontWeight:600 }}>
+          <span style={{ width:8, height:8, borderRadius:'50%', background:'#22C55E', display:'inline-block', animation:'pulse 2s ease-in-out infinite' }} />
+          Open to Work — Data Analyst Roles
+        </div>
+        <h1 style={{ fontSize:'clamp(2.5rem,6vw,4rem)', fontWeight:900, color:'var(--text-heading)', lineHeight:1.15, marginBottom:'0.75rem', letterSpacing:'-0.02em' }}>
+          Hi, I'm <span style={{ color:'var(--accent)' }}>Sagheer Ahmed</span>
+        </h1>
+        <p style={{ fontSize:'clamp(1.1rem,2.5vw,1.4rem)', color:'#52796F', fontWeight:400, marginBottom:'1.25rem', letterSpacing:'0.01em' }}>
+          Data Analyst · Python · SQL · Excel · Power BI
+        </p>
+        <div style={{ maxWidth:520, margin:'0 auto 2rem' }}>
+          <p style={{ fontSize:'1rem', color:'var(--text-heading)', lineHeight:1.8, marginBottom:'0.25rem' }}>
+            I turn raw, messy datasets into clear business insights that drive real decisions.
+          </p>
+          <p style={{ fontSize:'1rem', color:'#84A98C', lineHeight:1.8 }}>
+            Based in Pakistan. Available for remote roles globally.
+          </p>
+        </div>
+        <div style={{ display:'flex', gap:'1rem', justifyContent:'center', flexWrap:'wrap' }}>
+          <a href="#projects" style={{ background:'var(--accent)', color:'#fff', textDecoration:'none', padding:'12px 28px', borderRadius:10, fontWeight:700, fontSize:15, transition:'all 0.2s ease', display:'inline-block' }}
+            onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 20px rgba(82,121,111,0.4)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
+            View Projects →
+          </a>
+          <a href="#contact" style={{ background:'transparent', color:'var(--accent)', textDecoration:'none', padding:'12px 28px', borderRadius:10, fontWeight:700, fontSize:15, border:'2px solid var(--accent)', transition:'all 0.2s ease', display:'inline-block' }}
+            onMouseEnter={e => e.currentTarget.style.background='var(--accent-light)'}
+            onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+            Contact Me
+          </a>
+        </div>
+        <div style={{ marginTop:'3rem', animation:'float3 2s ease-in-out infinite', fontSize:22, color:'var(--text-muted)' }}>↓</div>
+      </div>
+    </section>
+  );
+}
+
+function About() {
+  const facts = [
+    {icon:'🎓',label:'BS Computer Science'},{icon:'📍',label:'Rawalpindi, Pakistan'},
+    {icon:'💼',label:'Open to remote work'},{icon:'📊',label:'5 analytics projects'},
+    {icon:'🔍',label:'Data-driven thinker'},{icon:'🌍',label:'Global opportunities'},
+  ];
+  return (
+    <section id="about" style={{ background:'var(--bg-alt)', padding:'5rem 2rem' }}>
+      <div style={{ maxWidth:1100, margin:'0 auto' }}>
+        <SectionLabel label="About Me" />
+        <h2 style={{ fontSize:'clamp(1.8rem,4vw,2.5rem)', fontWeight:900, color:'var(--text-heading)', marginBottom:'3rem', letterSpacing:'-0.01em' }}>Turning data into decisions</h2>
+        <div className="about-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'3rem', alignItems:'start' }}>
+          <div>
+            <p style={{ fontSize:'1.05rem', lineHeight:1.85, color:'var(--text)', marginBottom:'1.25rem' }}>
+              I'm a <strong style={{ color:'var(--accent)' }}>Computer Science graduate</strong> with a deep interest in data analytics and business intelligence. I believe that behind every business problem is a dataset waiting to tell its story — you just need to know how to listen.
+            </p>
+            <p style={{ fontSize:'1.05rem', lineHeight:1.85, color:'var(--text-muted)', marginBottom:'1.25rem' }}>
+              My work focuses on <strong style={{ color:'var(--text)' }}>exploratory data analysis</strong>, uncovering patterns that aren't obvious at first glance, and translating them into recommendations that non-technical stakeholders can act on immediately.
+            </p>
+            <p style={{ fontSize:'1.05rem', lineHeight:1.85, color:'var(--text-muted)' }}>
+              I've completed <strong style={{ color:'var(--text)' }}>5 end-to-end analytics projects</strong> using Python, SQL, and Excel — each starting from a real business question, not just a dataset. I'm currently building Power BI skills and looking for my first Data Analyst role.
+            </p>
+          </div>
+          <div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.75rem', marginBottom:'1.5rem' }}>
+              {facts.map((f,i) => (
+                <div key={i} style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:10, padding:'0.8rem 1rem', display:'flex', alignItems:'center', gap:10, transition:'all 0.2s ease', cursor:'default' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor='var(--accent)'; e.currentTarget.style.transform='translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.transform='translateY(0)'; }}>
+                  <span style={{ fontSize:18 }}>{f.icon}</span>
+                  <span style={{ fontSize:13, fontWeight:600, color:'var(--text)' }}>{f.label}</span>
+                </div>
+              ))}
+            </div>
+            <a href="https://github.com/sagheerahmed1" target="_blank" rel="noreferrer"
+              style={{ display:'flex', alignItems:'center', gap:10, background:'var(--card)', border:'1px solid var(--border)', borderRadius:10, padding:'0.9rem 1.2rem', textDecoration:'none', transition:'all 0.2s ease' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor='var(--accent)'; e.currentTarget.style.background='var(--accent-light)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.background='var(--card)'; }}>
+              <span style={{ fontSize:22 }}>🐙</span>
+              <div>
+                <p style={{ fontSize:13, fontWeight:700, color:'var(--text)', margin:0 }}>github.com/sagheerahmed1</p>
+                <p style={{ fontSize:12, color:'var(--text-muted)', margin:0 }}>View all projects and notebooks</p>
+              </div>
+              <span style={{ marginLeft:'auto', color:'var(--accent)', fontSize:16 }}>→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SkillBar({ skill, visible }) {
+  const lc = skill.level >= 80 ? '#22C55E' : skill.level >= 60 ? 'var(--accent)' : '#F59E0B';
+  const ll = skill.level >= 80 ? 'Advanced' : skill.level >= 60 ? 'Intermediate' : 'Beginner';
+  return (
+    <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:12, padding:'1.2rem 1.4rem', transition:'all 0.2s ease' }}
+      onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 6px 20px var(--shadow-hover)'; e.currentTarget.style.borderColor='var(--accent)'; }}
+      onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; e.currentTarget.style.borderColor='var(--border)'; }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'0.6rem' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <span style={{ fontSize:20 }}>{skill.icon}</span>
+          <div>
+            <p style={{ fontWeight:700, color:'var(--text)', fontSize:15, margin:0 }}>{skill.name}</p>
+            <p style={{ fontSize:11, color:'var(--text-muted)', margin:0 }}>{skill.category}</p>
+          </div>
+        </div>
+        <div style={{ textAlign:'right' }}>
+          <span style={{ fontSize:13, fontWeight:700, color:lc }}>{skill.level}%</span>
+          <p style={{ fontSize:10, color:'var(--text-muted)', margin:0 }}>{ll}</p>
+        </div>
+      </div>
+      <div style={{ height:6, background:'var(--border)', borderRadius:3, overflow:'hidden' }}>
+        <div style={{ height:'100%', borderRadius:3, background:`linear-gradient(90deg, var(--accent), ${lc})`, width: visible ? `${skill.level}%` : '0%', transition:'width 1.2s cubic-bezier(0.4,0,0.2,1)', transitionDelay:'0.1s' }} />
+      </div>
+    </div>
+  );
+}
+
+function Skills() {
+  const [visible, setVisible] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold:0.2 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  return (
+    <section id="skills" style={{ background:'var(--bg)', padding:'5rem 2rem' }} ref={ref}>
+      <div style={{ maxWidth:1100, margin:'0 auto' }}>
+        <SectionLabel label="Skills" />
+        <h2 style={{ fontSize:'clamp(1.8rem,4vw,2.5rem)', fontWeight:900, color:'var(--text-heading)', marginBottom:'0.75rem', letterSpacing:'-0.01em' }}>Technical toolkit</h2>
+        <p style={{ color:'var(--text-muted)', marginBottom:'2.5rem', maxWidth:500 }}>Proficiency levels are self-assessed based on real project work — not just tutorials.</p>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:'1rem' }}>
+          {SKILLS.map(s => <SkillBar key={s.name} skill={s} visible={visible} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProjectCard({ project }) {
+  const [exp, setExp] = useState(false);
+  return (
+    <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:16, overflow:'hidden', transition:'all 0.3s ease', boxShadow: exp ? '0 12px 40px var(--shadow-hover)' : '0 2px 12px var(--shadow)' }}>
+      <div style={{ padding:'1.5rem 1.75rem 1.25rem' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:'0.75rem' }}>
+          <span style={{ fontSize:28, lineHeight:1 }}>{project.emoji}</span>
+          <div>
+            <h3 style={{ fontWeight:800, fontSize:'1.05rem', color:'var(--text-heading)', margin:0, lineHeight:1.3 }}>{project.title}</h3>
+            <span style={{ fontSize:11, background:'rgba(34,197,94,0.15)', color:'#22C55E', borderRadius:4, padding:'2px 8px', fontWeight:600 }}>✓ {project.status}</span>
+          </div>
+        </div>
+        <p style={{ fontSize:14, color:'var(--text-muted)', lineHeight:1.7, marginBottom:'1rem' }}>{project.problem}</p>
+        <div style={{ display:'flex', flexWrap:'wrap', gap:'0.4rem', marginBottom:'1rem' }}>
+          {project.metrics.map((m,i) => <span key={i} style={{ fontSize:11, background:'var(--accent-light)', color:'var(--accent)', borderRadius:6, padding:'3px 10px', fontWeight:700, border:'1px solid rgba(82,121,111,0.2)' }}>{m}</span>)}
+        </div>
+        <div style={{ display:'flex', flexWrap:'wrap', gap:'0.4rem', marginBottom:'1.25rem' }}>
+          {project.tools.map((t,i) => <span key={i} style={{ fontSize:11, background:'var(--border)', color:'var(--text-muted)', borderRadius:6, padding:'3px 10px', fontWeight:600 }}>{t}</span>)}
+        </div>
+        <div style={{ display:'flex', gap:'0.75rem', alignItems:'center' }}>
+          <button onClick={() => setExp(!exp)} style={{ flex:1, background: exp ? 'var(--accent)' : 'var(--accent-light)', color: exp ? '#fff' : 'var(--accent)', border:'1px solid rgba(82,121,111,0.3)', borderRadius:8, padding:'8px 16px', cursor:'pointer', fontWeight:700, fontSize:13, transition:'all 0.2s ease' }}>
+            {exp ? '▲ Collapse Details' : '▼ See Full Analysis'}
+          </button>
+          <a href={project.github} target="_blank" rel="noreferrer" style={{ background:'transparent', color:'var(--text-muted)', border:'1px solid var(--border)', borderRadius:8, padding:'8px 14px', textDecoration:'none', fontSize:13, fontWeight:600, transition:'all 0.2s ease' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor='var(--accent)'; e.currentTarget.style.color='var(--accent)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.color='var(--text-muted)'; }}>
+            🐙 GitHub
+          </a>
+        </div>
+      </div>
+      {exp && (
+        <div style={{ padding:'1.5rem 1.75rem', borderTop:'1px solid var(--border)', animation:'fadeInUp 0.3s ease both' }}>
+          {[['📦','Dataset',project.dataset],['🔍','Exploratory Data Analysis',project.eda]].map(([icon,title,content]) => (
+            <div key={title} style={{ marginBottom:'1.25rem' }}>
+              <p style={{ fontWeight:700, fontSize:14, color:'var(--text)', marginBottom:'0.4rem' }}>{icon} {title}</p>
+              <p style={{ fontSize:14, color:'var(--text-muted)', lineHeight:1.7, margin:0 }}>{content}</p>
+            </div>
+          ))}
+          <div style={{ marginBottom:'1.25rem' }}>
+            <p style={{ fontWeight:700, fontSize:14, color:'var(--text)', marginBottom:'0.4rem' }}>🧹 Data Cleaning Steps</p>
+            <ul style={{ paddingLeft:'1.2rem', margin:0 }}>
+              {project.cleaning.map((s,i) => <li key={i} style={{ fontSize:14, color:'var(--text-muted)', lineHeight:1.7, marginBottom:4 }}>{s}</li>)}
+            </ul>
+          </div>
+          <div style={{ marginBottom:'1.25rem' }}>
+            <p style={{ fontWeight:700, fontSize:14, color:'var(--text)', marginBottom:'0.6rem' }}>💡 Key Business Insights</p>
+            <div style={{ display:'flex', flexDirection:'column', gap:'0.6rem' }}>
+              {project.insights.map((ins,i) => (
+                <div key={i} style={{ display:'flex', gap:10, background:'var(--bg-alt)', borderRadius:8, padding:'0.75rem 1rem', border:'1px solid var(--border)' }}>
+                  <span style={{ color:'var(--accent)', fontWeight:700, fontSize:13, minWidth:20 }}>0{i+1}</span>
+                  <p style={{ fontSize:14, color:'var(--text)', lineHeight:1.6, margin:0 }}>{ins}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ background:'var(--accent-light)', border:'1px solid rgba(82,121,111,0.3)', borderRadius:10, padding:'1rem 1.25rem', borderLeft:'3px solid var(--accent)' }}>
+            <p style={{ fontSize:13, fontWeight:700, color:'var(--accent)', marginBottom:'0.3rem' }}>📌 Business Conclusion</p>
+            <p style={{ fontSize:14, color:'var(--text)', lineHeight:1.7, margin:0, fontStyle:'italic' }}>{project.conclusion}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Projects() {
+  return (
+    <section id="projects" style={{ background:'var(--bg-alt)', padding:'5rem 2rem' }}>
+      <div style={{ maxWidth:1100, margin:'0 auto' }}>
+        <SectionLabel label="Projects" />
+        <h2 style={{ fontSize:'clamp(1.8rem,4vw,2.5rem)', fontWeight:900, color:'var(--text-heading)', marginBottom:'0.75rem', letterSpacing:'-0.01em' }}>Real-world analytics work</h2>
+        <p style={{ color:'var(--text-muted)', marginBottom:'2.5rem', maxWidth:580 }}>Every project starts with a business question. Click <strong style={{ color:'var(--text)' }}>See Full Analysis</strong> to explore the full methodology, cleaning steps, and insights.</p>
+        <div className="projects-grid" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(480px,1fr))', gap:'1.5rem' }}>
+          {PROJECTS.map(p => <ProjectCard key={p.id} project={p} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PBICard({ db }) {
+  const [tab, setTab] = useState('visuals');
+  const tabs = [{key:'visuals',label:'📊 Visuals'},{key:'kpis',label:'📌 KPIs'},{key:'slicers',label:'🎚️ Slicers'},{key:'questions',label:'❓ Business Qs'}];
+  return (
+    <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:16, overflow:'hidden' }}>
+      <div style={{ padding:'1.5rem 1.75rem 1rem', borderBottom:'1px solid var(--border)', background:`linear-gradient(135deg, ${db.color}15, transparent)` }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <span style={{ fontSize:28 }}>{db.icon}</span>
+          <div>
+            <h3 style={{ fontWeight:800, fontSize:'1.05rem', color:'var(--text-heading)', margin:0 }}>{db.title}</h3>
+            <span style={{ fontSize:11, color:'var(--text-muted)' }}>Power BI · Beginner build</span>
+          </div>
+        </div>
+      </div>
+      <div style={{ display:'flex', borderBottom:'1px solid var(--border)', overflow:'auto' }}>
+        {tabs.map(t => <button key={t.key} onClick={() => setTab(t.key)} style={{ background:'none', border:'none', borderBottom: tab===t.key ? '2px solid var(--accent)' : '2px solid transparent', padding:'0.7rem 1rem', cursor:'pointer', fontSize:12, fontWeight: tab===t.key ? 700 : 400, color: tab===t.key ? 'var(--accent)' : 'var(--text-muted)', whiteSpace:'nowrap', transition:'all 0.2s ease' }}>{t.label}</button>)}
+      </div>
+      <div style={{ padding:'1.25rem 1.75rem 1.5rem' }}>
+        <ul style={{ listStyle:'none', padding:0, margin:0, display:'flex', flexDirection:'column', gap:'0.6rem' }}>
+          {db[tab].map((item,i) => (
+            <li key={i} style={{ display:'flex', gap:10, fontSize:14, color:'var(--text)', lineHeight:1.6, padding:'0.5rem 0.75rem', borderRadius:8, background:'var(--bg-alt)' }}>
+              <span style={{ color:'var(--accent)', fontWeight:700, minWidth:18, fontSize:13 }}>→</span>{item}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function PowerBI() {
+  return (
+    <section id="powerbi" style={{ background:'var(--bg)', padding:'5rem 2rem' }}>
+      <div style={{ maxWidth:1100, margin:'0 auto' }}>
+        <SectionLabel label="Power BI" />
+        <h2 style={{ fontSize:'clamp(1.8rem,4vw,2.5rem)', fontWeight:900, color:'var(--text-heading)', marginBottom:'0.75rem', letterSpacing:'-0.01em' }}>Dashboard designs</h2>
+        <p style={{ color:'var(--text-muted)', marginBottom:'2.5rem', maxWidth:560 }}>Designed with a clear business purpose — every visual answers a specific question a manager would actually ask.</p>
+        <div className="pbi-grid" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(480px,1fr))', gap:'1.5rem' }}>
+          {POWERBI_DASHBOARDS.map((db,i) => <PBICard key={i} db={db} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Chatbot() {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState([{ from:'bot', text:"Hi! 👋 I'm Sagheer's portfolio assistant. Ask me about his skills, projects, experience, or how to contact him!", ts:Date.now() }]);
+  const [input, setInput] = useState('');
+  const [typing, setTyping] = useState(false);
+  const endRef = useRef(null);
+  useEffect(() => { if (open && endRef.current) endRef.current.scrollIntoView({ behavior:'smooth' }); }, [messages, open]);
+  const send = (text) => {
+    const t = (text || input).trim();
+    if (!t) return;
+    setMessages(m => [...m, { from:'user', text:t, ts:Date.now() }]);
+    setInput('');
+    setTyping(true);
+    setTimeout(() => { setTyping(false); setMessages(m => [...m, { from:'bot', text:getBotResponse(t), ts:Date.now() }]); }, 900 + Math.random()*600);
+  };
+  const qr = ["What are your skills?","Show me projects","Are you open to work?","How to contact you?"];
+  return (
+    <>
+      {open && (
+        <div style={{ position:'fixed', bottom:88, right:24, width:340, maxHeight:520, background:'var(--card)', border:'1px solid var(--border)', borderRadius:20, display:'flex', flexDirection:'column', boxShadow:'0 20px 60px rgba(0,0,0,0.2)', zIndex:9999, animation:'slideInRight 0.3s ease both', overflow:'hidden' }}>
+          <div style={{ background:'var(--accent)', padding:'1rem 1.25rem', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <div style={{ width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>🤖</div>
+              <div>
+                <p style={{ fontWeight:700, color:'#fff', fontSize:14, margin:0 }}>Portfolio Assistant</p>
+                <p style={{ fontSize:11, color:'rgba(255,255,255,0.8)', margin:0 }}>● Online</p>
+              </div>
+            </div>
+            <button onClick={() => setOpen(false)} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:6, color:'#fff', width:28, height:28, cursor:'pointer', fontSize:14, display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
+          </div>
+          <div style={{ flex:1, overflowY:'auto', padding:'1rem', display:'flex', flexDirection:'column', gap:'0.75rem' }}>
+            {messages.map((msg,i) => (
+              <div key={i} style={{ display:'flex', justifyContent: msg.from==='user' ? 'flex-end' : 'flex-start' }}>
+                <div style={{ maxWidth:'80%', background: msg.from==='user' ? 'var(--accent)' : 'var(--bg-alt)', color: msg.from==='user' ? '#fff' : 'var(--text)', borderRadius: msg.from==='user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', padding:'0.6rem 0.9rem', fontSize:13, lineHeight:1.6, border: msg.from==='bot' ? '1px solid var(--border)' : 'none' }}>{msg.text}</div>
+              </div>
+            ))}
+            {typing && <div style={{ display:'flex', gap:4, padding:'8px 12px', background:'var(--bg-alt)', borderRadius:'16px 16px 16px 4px', width:'fit-content', border:'1px solid var(--border)' }}>{[0,1,2].map(i => <span key={i} style={{ width:7, height:7, borderRadius:'50%', background:'var(--accent)', display:'inline-block', animation:`typing 1.2s ease-in-out ${i*0.2}s infinite` }} />)}</div>}
+            <div ref={endRef} />
+          </div>
+          <div style={{ padding:'0.5rem 0.75rem', display:'flex', gap:'0.4rem', flexWrap:'wrap', borderTop:'1px solid var(--border)' }}>
+            {qr.map(q => <button key={q} onClick={() => send(q)} style={{ fontSize:11, background:'var(--accent-light)', color:'var(--accent)', border:'1px solid rgba(82,121,111,0.25)', borderRadius:12, padding:'3px 10px', cursor:'pointer', fontWeight:600, transition:'all 0.15s ease' }}
+              onMouseEnter={e => { e.currentTarget.style.background='var(--accent)'; e.currentTarget.style.color='#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.background='var(--accent-light)'; e.currentTarget.style.color='var(--accent)'; }}>{q}</button>)}
+          </div>
+          <div style={{ padding:'0.75rem', borderTop:'1px solid var(--border)', display:'flex', gap:'0.5rem' }}>
+            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key==='Enter'&&!e.shiftKey) { e.preventDefault(); send(); } }} placeholder="Ask me anything..." style={{ flex:1, background:'var(--bg-alt)', border:'1px solid var(--border)', borderRadius:10, padding:'8px 12px', color:'var(--text)', fontSize:13, outline:'none' }} />
+            <button onClick={() => send()} disabled={!input.trim()} style={{ background:'var(--accent)', border:'none', borderRadius:10, color:'#fff', padding:'8px 14px', cursor:'pointer', fontSize:16, opacity: input.trim() ? 1 : 0.5, transition:'all 0.15s ease' }}>↑</button>
+          </div>
+        </div>
+      )}
+      <button onClick={() => setOpen(!open)} style={{ position:'fixed', bottom:24, right:24, width:56, height:56, borderRadius:'50%', background:'var(--accent)', border:'none', cursor:'pointer', fontSize:22, color:'#fff', boxShadow:'0 4px 20px rgba(82,121,111,0.5)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.2s ease', animation: open ? 'none' : 'pulse 3s ease-in-out infinite' }}
+        onMouseEnter={e => e.currentTarget.style.transform='scale(1.1)'}
+        onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
+        {open ? '✕' : '💬'}
+      </button>
+    </>
+  );
+}
+
+function Contact() {
+  const [form, setForm] = useState({ name:'', email:'', message:'' });
+  const [sent, setSent] = useState(false);
+  const handleSubmit = (e) => { e.preventDefault(); setSent(true); setTimeout(() => setSent(false), 4000); setForm({ name:'', email:'', message:'' }); };
+  const socials = [
+    {icon:'🐙',label:'GitHub',value:'github.com/sagheerahmed1',href:'https://github.com/sagheerahmed1'},
+    {icon:'💼',label:'LinkedIn',value:'Add your LinkedIn URL',href:'#'},
+    {icon:'✉️',label:'Email',value:'Add your email address',href:'mailto:yourmail@example.com'},
+  ];
+  const inp = { width:'100%', background:'var(--input-bg)', border:'1px solid var(--border)', borderRadius:10, padding:'10px 14px', color:'var(--text)', fontSize:14, outline:'none', transition:'border-color 0.2s ease' };
+  return (
+    <section id="contact" style={{ background:'var(--bg-alt)', padding:'5rem 2rem' }}>
+      <div style={{ maxWidth:1100, margin:'0 auto' }}>
+        <SectionLabel label="Contact" />
+        <h2 style={{ fontSize:'clamp(1.8rem,4vw,2.5rem)', fontWeight:900, color:'var(--text-heading)', marginBottom:'0.75rem', letterSpacing:'-0.01em' }}>Let's work together</h2>
+        <p style={{ color:'var(--text-muted)', marginBottom:'3rem', maxWidth:500 }}>Open to Data Analyst roles — remote or on-site in Pakistan. Response within 24 hours.</p>
+        <div className="contact-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1.3fr', gap:'3rem', alignItems:'start' }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
+            {socials.map((s,i) => (
+              <a key={i} href={s.href} target="_blank" rel="noreferrer" style={{ display:'flex', alignItems:'center', gap:14, background:'var(--card)', border:'1px solid var(--border)', borderRadius:12, padding:'1rem 1.25rem', textDecoration:'none', transition:'all 0.2s ease' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor='var(--accent)'; e.currentTarget.style.transform='translateX(4px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.transform='translateX(0)'; }}>
+                <span style={{ fontSize:24 }}>{s.icon}</span>
+                <div>
+                  <p style={{ fontSize:11, color:'var(--text-muted)', margin:0, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em' }}>{s.label}</p>
+                  <p style={{ fontSize:14, color:'var(--accent)', margin:0, fontWeight:600 }}>{s.value}</p>
+                </div>
+                <span style={{ marginLeft:'auto', color:'var(--text-muted)', fontSize:14 }}>→</span>
+              </a>
+            ))}
+            <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:12, padding:'1.25rem', marginTop:'0.5rem' }}>
+              <p style={{ fontWeight:700, color:'var(--text)', fontSize:14, marginBottom:'0.5rem' }}>🌍 Availability</p>
+              <p style={{ fontSize:13, color:'var(--text-muted)', lineHeight:1.7, margin:0 }}>Based in Rawalpindi, Pakistan · IST (UTC+5)<br/>Available for full-time remote roles globally.<br/>Open to relocation for the right opportunity.</p>
+            </div>
+          </div>
+          <form onSubmit={handleSubmit}>
+            <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
+              {[['name','Your Name','John Smith','text'],['email','Email Address','john@company.com','email']].map(([key,label,ph,type]) => (
+                <div key={key}>
+                  <label style={{ display:'block', fontSize:13, fontWeight:600, color:'var(--text)', marginBottom:6 }}>{label}</label>
+                  <input required type={type} value={form[key]} onChange={e => setForm({...form,[key]:e.target.value})} placeholder={ph} style={inp}
+                    onFocus={e => e.target.style.borderColor='var(--accent)'}
+                    onBlur={e => e.target.style.borderColor='var(--border)'} />
+                </div>
+              ))}
+              <div>
+                <label style={{ display:'block', fontSize:13, fontWeight:600, color:'var(--text)', marginBottom:6 }}>Message</label>
+                <textarea required value={form.message} onChange={e => setForm({...form,message:e.target.value})} placeholder="I'd like to discuss a Data Analyst opportunity..." rows={5} style={{...inp,resize:'vertical'}}
+                  onFocus={e => e.target.style.borderColor='var(--accent)'}
+                  onBlur={e => e.target.style.borderColor='var(--border)'} />
+              </div>
+              {sent && <div style={{ background:'rgba(34,197,94,0.15)', border:'1px solid rgba(34,197,94,0.3)', borderRadius:8, padding:'0.75rem 1rem', fontSize:13, color:'#22C55E', fontWeight:600 }}>✓ Message sent! Sagheer will respond within 24 hours.</div>}
+              <button type="submit" style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:10, padding:'12px 24px', fontWeight:700, fontSize:15, cursor:'pointer', transition:'all 0.2s ease' }}
+                onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 6px 20px rgba(82,121,111,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
+                Send Message →
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer style={{ background:'var(--bg)', borderTop:'1px solid var(--border)', padding:'2rem', textAlign:'center' }}>
+      <p style={{ fontSize:13, color:'var(--text-muted)' }}>
+        Built with React · Designed by <a href="https://github.com/sagheerahmed1" style={{ color:'var(--accent)', textDecoration:'none', fontWeight:600 }}>Sagheer Ahmed</a> · {new Date().getFullYear()}
+      </p>
+    </footer>
+  );
+}
+
+function App() {
+  const [dark, setDark] = useState(() => {
+    try { const s = localStorage.getItem('sagheer-theme'); if (s) return s==='dark'; return window.matchMedia('(prefers-color-scheme: dark)').matches; } catch { return false; }
+  });
+  useEffect(() => { applyTheme(dark); }, [dark]);
+  useEffect(() => { applyTheme(dark); }, []);
+  const toggleDark = () => setDark(prev => { const next = !prev; try { localStorage.setItem('sagheer-theme', next?'dark':'light'); } catch {} return next; });
+  return (
+    <>
+      <Navbar dark={dark} toggleDark={toggleDark} />
+      <main>
+        <Hero dark={dark} />
+        <About />
+        <Skills />
+        <Projects />
+        <PowerBI />
+        <Contact />
+      </main>
+      <Footer />
+      <Chatbot />
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
